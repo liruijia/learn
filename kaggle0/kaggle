@@ -1,0 +1,21 @@
+在kaggle上下载数据集
+
+0.在电脑上安装kaggle 
+  
+   pip install kaggle
+   
+   默认安装在C:\Users\Administrator\.kaggle 路径下保存一个.kaggle文件夹
+
+1.选定相应的比赛 然后点击accept
+
+2.进入my account中找到api 然后点击create new api，进行下载json文件
+
+3.将下载下来的json文件放到.kaggle文件夹下
+
+4.回到相应的competition中点击data，然后找到api下载命令 将其在cmd中执行即可，默认下载在C:\Users\Administrator
+
+   当然也可以改变路径：在相应的存储路径下执行：
+      
+        kaggle config set -v path -n 路径
+        
+        
