@@ -8,8 +8,7 @@ import os
 class news_spider():
     def __init__(self,headers):
         print('开始进行对于网易新闻网站的娱乐、健康、公益、科技、旅游主题的新闻进行爬取')
-        self.headers=headers
-        
+        self.headers=headers        
     def urls_public_benefit(self,url): 
         urlsss = []
         r = requests.get(url,headers=self.headers).text
