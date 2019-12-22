@@ -87,7 +87,7 @@ class jd_comment():
                 index_drop.append(row_id)
                 print('row_id',row_id)
             else:
-                if comment_num==0:
+                if int(comment_num)==0:
                     index_drop.append(row_id)
                     print('row_id',row_id)
         print('index:',index_drop)
@@ -113,7 +113,7 @@ class jd_comment():
         if comment_num <=10:
             all_page=1
         elif comment_num>10000:
-            all_page=1000
+            all_page=1100
         else:
             all_page=int(comment_num/10)-1
         for ii in range(all_page):
@@ -150,18 +150,16 @@ class jd_comment():
         return all_comment
 
     def get_all_comment(self,info):
-        f=codecs.open('C:/Users/Administrator/Desktop/data/评论/comment_info_final.csv','w',encoding='utf-8')
-        writer = csv.writer(f, delimiter=',', quotechar=' ', quoting=csv.QUOTE_MINIMAL)
         comment_total=pd.DataFrame(columns=['user_id','user_name','referenceTime','score','productid','product_color','comment'])
-        writer.writerow(['user_id','user_name','referenceTime','score','productid','product_color','comment'])
         for row_id,data in info.iterrows():
             product_id=data['productId']
             comment_num=data['comment_num']
+            if product_id == '46165085511':
+                continue
             comment=self._getcomment(product_id,comment_num)
-            for row_id,data in comment.iterrows():
-                writer.writerow(data)
-            
-        #comment_total.to_csv('C:/Users/Administrator/Desktop/data/评论/comment_info_final.csv')
+            comment_total=pd.concat([comment_total,comment],axis=0)
+            print('product:{0} 已经爬取完毕'.format(product_id))
+        comment_total.to_csv('C:/Users/Administrator/Desktop/data/评论/comment_info_final.csv')
         return comment_total
 
 
