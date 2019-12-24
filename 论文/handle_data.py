@@ -83,7 +83,22 @@ class Loaddata():
         stop_words.add(u'上次')
         stop_words.add(u'始终认为')
         stop_words.add(u'评论')
-        stop_words.add(u'外形外观')
+        stop_words.add(u'ColorOS')
+        stop_words.add(u'Aeno')
+        stop_words.add(u'GPU')
+        stop_words.add(u'gpu')
+        stop_words.add(u'VO')
+        stop_words.add(u' color OS MIUI ')
+        stop_words.add(u'emui')
+        stop_words.add(u' color')
+        stop_words.add(u'OS')
+        stop_words.add(u'nfc')
+        stop_words.add(u'O')
+        stop_words.add(u'hellip')
+        stop_words.add(u'OTG')
+        stop_words.add('NFC ')
+
+
         print('所有的停用词加载完成')
         return stop_words
 
@@ -119,21 +134,21 @@ class Loaddata():
         data_comment=comment_info['comment'].tolist()
         corpus=[]
         for c in data_comment:
-            new_c=re.sub(r'[%s]+'%punctuation,' ',c)
+            new_c=re.sub(r'[%s,\t,\\]+'%punctuation,' ',c)
             cut_c=jieba.lcut(new_c)
             new_doc=[]
             for word in cut_c:
-                if len(word)==1:
-                    continue
-                if word not in stop_words and not word.isdigit():
-                    new_doc.append(word)
+                #print(word,word.isalpha())
+                if word not in stop_words:
+                    if word.isalpha() is True :
+                        new_doc.append(word)
+                        #print(word)
             corpus.append(new_doc)
-        f=open('C:/Users/Administrator/Desktop/data/评论/cut_comment.txt','w',encoding='utf-8')
+        f=open('C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt','w',encoding='utf-8')
         for i in corpus:
             f.write(' '.join(i) )
             f.write('\n')
         f.close()
-        
         print('已经加载完毕评论形成corpus***************')
         return corpus
         
@@ -228,12 +243,7 @@ class Loaddata():
         plt.show()
         return
 
-          
-     
 
-        
-        
-        
 
 class get_dagword():
     def __int__(self):
@@ -283,4 +293,10 @@ if __name__=='__main__':
     M=get_dagword()
     word2id,id2word,corpus,wordnum=M.getdagword(all_text)
 '''
+
+if __name__=='__main__':
+    P=Loaddata()
+    stopwords_path='../论文/中文停用词/stopwords'
+    path='C:/Users/Administrator/Desktop/data/评论/comment_info_final.csv'
+    all_text=P.load_comment(stopwords_path,path)
  
