@@ -16,11 +16,15 @@
 '''
 
 
-
-import pandas as  pd
+import sys
+sys.path.append('G:/anconada/envs/py36/lib/site-packages')
 from gensim.models  import word2vec
 from sklearn.feature_extraction.text  import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
+import json
+import psutil
+import os
+import pandas as pd
 
 class sentiment_dict():
     def __init__(self):
@@ -124,12 +128,24 @@ if __name__=='__main__':
     df_info['情感大分类_表达']=df_info['情感大分类'].map({2:1,3:2,6:2,4:3,5:3,7:3,1:4})
     df_info['情感大分类_态度']=df_info['情感大分类'].map({1:0,2:0,3:1,4:1,5:1,6:1,7:1})
 
+    df_info.to_csv('C:\\Users\\Administrator\\Desktop\\data\\评论\\df_info.csv')
+
     final_info_sentword=P.load_amend_dict(data1,final_data0)
+    with open('C:\\Users\\Administrator\\Desktop\\data\\评论\\final_info_sentword.json','w',encoding='utf-8') as fw:
+        str=json.dumps(final_info_sentword)
+        fw.write(str)
+        #json.dump(final_info_sentword,fw) #也可以直接使用这种方法
     print(final_info_sentword['OPPO'])
     items=model.most_similar(u'好评',topn=20)
     print('“好评”一词的相似的词语')
     for word ,sim_par in items:
         print(word,sim_par)
+    info = psutil.virtual_memory()
+    print('*'*30)
+    print(u'内存使用：', psutil.Process(os.getpid()).memory_info().rss)
+    print(u'总内存：', info.total)
+    print(u'内存占比：', info.percent)
+    print(u'cpu个数：', psutil.cpu_count())
 
 
 

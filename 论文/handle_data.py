@@ -151,6 +151,22 @@ class Loaddata():
         f.close()
         print('已经加载完毕评论形成corpus***************')
         return corpus
+    def load_comment_zwqgfxylk(self,stopwords_path,path):
+        root_path='C:/Users/Administrator/Desktop/data/中文情感分析语料库/'
+        cut_corpus=[]
+        stop_words = list(self._loadstopwords(stopwords_path))
+        with open(path,'r',encoding='utf-8') as f:
+            c=[]
+            for line in f.readlines():
+                new_c = re.sub(r'[%s,\t,\\]+' % punctuation, ' ', line)
+                cut_c = jieba.lcut(new_c)
+                for word in cut_c:
+                    if word not in stop_words :
+                        if  word.isalpha() is True:
+                            c.append(word)
+            cut_corpus.append(c)
+            f.close()
+        return cut_corpus
         
     def _load_corpus(self,sentences,stopwords_path):
         '''得到的 corpus是一个双层列表'''
@@ -299,4 +315,6 @@ if __name__=='__main__':
     stopwords_path='../论文/中文停用词/stopwords'
     path='C:/Users/Administrator/Desktop/data/评论/comment_info_final.csv'
     all_text=P.load_comment(stopwords_path,path)
+    path_list=os.listdir('C:\\Users\\Administrator\\Desktop\\data\\中文情感分析语料库')
+    load_comment_zwqgfxylk(stopwords_path, path)
  

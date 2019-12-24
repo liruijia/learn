@@ -16,6 +16,7 @@
 '''
 
 import sys
+sys.path.append('G:/anconada/envs/py36/lib/site-packages')
 from prettytable import PrettyTable
 import re 
 import jieba
@@ -36,77 +37,12 @@ import time
 from gensim.models  import word2vec
 from sklearn.feature_extraction.text  import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
-sys.path.append('G:/anconada/envs/py36/lib/site-packages')
+#from guppy import hpy
+import psutil
+import os
+
 
 ''' 在写论文的时候可以使用两组数据查看模型的效果'''
-
-
-class sentiment_dict():
-    def __init__(self):
-       print('开始处理情感词典')
-
-    def get_data(self,path_list):
-        final_data0=[]
-        #final_corpus=[]
-        data1 = pd.read_csv(path_list[1], engine='python')
-        final_data0.append(data1['词语'].tolist())
-
-        for path in path_list[2:]:
-            final_data0.append(self._load_senti_dict(path))
-
-        with open(path_list[0], 'r', encoding='utf-8') as f:
-            for line in f.readlines():
-                lines = line.strip().split(' ')
-                final_data0.append(lines)
-            f.close()
-
-        with open('C:/Users/Administrator/Desktop/data/评论/final_corpus.txt', 'w', encoding='utf-8') as f:
-            for line in final_data0:
-                f.write(' '.join(line))
-                f.write('\n')
-            f.close()
-        print('所有情感词典加载完毕*******************')
-        return final_data0
-
-    def _load_senti_dict(self,path):
-        data=[]
-        with open(path,'r',encoding='utf-8') as f :
-            for line  in f.readlines():
-                if line[0].isdigit():
-                    continue
-                else:
-                    if line != '\n':
-                        data.extend(line.strip().split(' '))
-            f.close()
-        data.pop(0)
-        print(path[-15:]+'加载完毕**************')
-        return data
-
-    def load_amend_dict(self,data_1, final_data0):
-        final_data = dict()
-        dict_word = data_1['词语'].tolist()
-        # print(data_2[:30])
-        for i, doc in enumerate(final_data0):
-            for j, word in enumerate(doc):
-                if word in final_data.keys() or word == ' ' or word == '':
-                    continue
-                else:
-                    final_data[word] = []
-                    if word in dict_word:
-                        index = dict_word.index(word)
-                        final_data[word] = data_1[['情感大分类', '强度']].loc[index].tolist()
-                    else:
-                        # print('word :{0} not in vocabulary'.format(word))
-                        sim_word = model.most_similar(word, topn=1)[0]
-                        if sim_word in dict_word:
-                            final_data[word] = final_data[sim_word]
-                            # print('word:{0} can find similar word :{1}'.format(word,sim_word))
-                        else:
-                            # print('word:{0} can not find similar word'.format(word))
-                            final_data[word] = [4, 3]
-        print('词语词典建立完成*************')
-        return final_data
-
 
 class ldamodel():
     def __init__(self,topic_num,sentiment_num,alpha,beta,gamma,corpus,interation,final_info_sentword,df_info):
@@ -118,7 +54,7 @@ class ldamodel():
         #这两个词典用来指定词语的情感标签，若我们想要评论的喜怒哀乐（此时S=4）则使用df_info 中的情感大分类_表达作为该词的情感标签
         #若想考查评论的态度（即正面评论还是反面评论，此时S=2）,则使用df_info中的情感大分类_态度作为该词的情感标签
 
-       self.sentiment_dict=final_info_sentword
+        self.sentiment_dict=final_info_sentword
         self.sentiment_map=df_info
 
         #超参数设置
@@ -127,6 +63,9 @@ class ldamodel():
         self.gamma=gamma if gamma else 0.1 
         self.corpus=corpus
         self.interation= interation if interation else 1000
+
+        self.word2id=None
+        self.id2word=None
 
         #设置参数
         self.doc_sel_topic_count=None
@@ -145,6 +84,13 @@ class ldamodel():
         self.z=None
         self.l=None
 
+        if self.S==4:
+            print('我们开始查看评论的情感表达情况--喜怒哀乐')
+        elif self.S==2:
+            print('我们开始考查评论的情感态度--正面或者反面')
+        elif self.S==7:
+            print('我们开始考查评论的情感大类情况---乐、好、怒、哀、惧、恶、惊')
+
     def createdictionary(self,cut_corpus):
         word2id=dict()
         wordnum=0
@@ -157,6 +103,8 @@ class ldamodel():
                 cut_doc_id[i][j]=word2id[word]
         self.V=wordnum
         self.D=len(cut_corpus)
+        self.word2id=word2id
+        self.id2word=dict(zip(word2id.values(),word2id.keys()))
         return word2id,dict(zip(word2id.values(),word2id.keys())),cut_doc_id,wordnum 
     
       
@@ -179,9 +127,17 @@ class ldamodel():
 
         for i,doc in enumerate(cut_doc_id):
             for j,word_id in enumerate(doc):
-                topic=random.randint(0,self.T-1)
-                sentiment=random.randint(0,self.S-1)
-                
+                word=self.id2word(word_id)
+                topic=int(random.randint(0,self.T-1))
+                senti_dalei=self.sentiment_dict[word][0] #需要注意的是这个地方随着查看的情感的不同需要一直改变
+                if self.S==7:
+                    sentiment=int(senti_dalei)
+                elif self.S==4:
+                    sentiment=int(self.sentiment_map[sentiment_map['情感大类']==senti_dalei]['情感大分类_表达'])
+                elif self.S==4:
+                    sentiment=int(self.sentiment_map[sentiment_map['情感大类']==senti_dalei]['情感大分类_态度'])
+                else:
+                    sentiment=random.randint(0,self.S-1)
                 self.doc_sel_topic_count[i,sentiment,topic]+=1
                 self.topic_sel_word_count[sentiment,topic,word_id]+=1
                 self.doc_count[i]+=1
@@ -414,68 +370,30 @@ class ldamodel():
         for i in topic_list:
           sns.scatterplot(x=range(0,self.V-1),y=self.topic_word[i,:])
           plt.show()
-          sns.countplot(x=range(0,self.V-1),hue=self.topic_word[i,:]) 
-
+          sns.countplot(x=range(0,self.V-1),hue=self.topic_word[i,:])
           plt.show()
 
     
   
 if __name__=='__main__':
-    path0 = 'C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt'
-    path1 = 'C:/Users/Administrator/Desktop/data/情感词汇本体/情感词汇本体.csv'
-    path2 = 'C:/Users/Administrator/Desktop/data/情感字典/知网Hownet情感词典/正面情感词语（中文）.txt'
-    path3 = 'C:/Users/Administrator/Desktop/data/情感字典/知网Hownet情感词典/负面情感词语（中文）.txt'
-    path4 = 'C:/Users/Administrator/Desktop/data/情感字典/知网Hownet情感词典/程度级别词语（中文）.txt'
-    path5 = 'C:/Users/Administrator/Desktop/data/情感字典/知网Hownet情感词典/正面评价词语（中文）.txt'
-    path6 = 'C:/Users/Administrator/Desktop/data/情感字典/知网Hownet情感词典/负面评价词语（中文）.txt'
-
-    path_list = [path0, path1, path2, path3, path4, path5, path6]
-
-    # vector=CountVectorizer()
-    # trans=TfidfTransformer()
-    # tfidf = trans.fit_transform(vector.fit_transform(final_corpus))
-    # word = vector.get_feature_names()  #
-    # weight = tfidf.toarray()
-
-    P = sentiment_dict()
-    final_data0 = P.get_data(path_list)
-    path01 = 'C:/Users/Administrator/Desktop/data/评论/final_corpus.txt'
-    sentences = word2vec.Text8Corpus(path01)
-    model = word2vec.Word2Vec(sentences, size=400, window=5, min_count=1)
-
-    data1 = pd.read_csv(path1, engine='python')
-    df_info = pd.DataFrame(columns=['情感分类'])
-    df_info['情感分类'] = data1['情感分类'].unique().tolist()
-    df_info['情感大分类'] = df_info['情感分类'].map({'PA': 1, 'PE': 1,
-                                            'PD': 2, 'PH': 2, 'PG': 2, 'PB': 2, 'PK': 2,
-                                            'NA': 3, 'NB': 4, 'NT': 4, 'NH': 4, 'PF': 4, 'NI': 5, 'NC': 5, 'NG': 5,
-                                            'NE': 6, 'ND': 6, 'NN': 6, 'NK': 6, 'NL': 6, 'PC': 7})
-    data1['情感大分类'] = data1['情感分类'].map({'PA': 1, 'PE': 1,
-                                        'PD': 2, 'PH': 2, 'PG': 2, 'PB': 2, 'PK': 2,
-                                        'NA': 3, 'NB': 4, 'NT': 4, 'NH': 4, 'PF': 4, 'NI': 5, 'NC': 5, 'NG': 5,
-                                        'NE': 6, 'ND': 6, 'NN': 6, 'NK': 6, 'NL': 6, 'PC': 7})
-    df_info['情感大分类_表达'] = df_info['情感大分类'].map({2: 1, 3: 2, 6: 2, 4: 3, 5: 3, 7: 3, 1: 4})
-    df_info['情感大分类_态度'] = df_info['情感大分类'].map({1: 0, 2: 0, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1})
-
-    final_info_sentword = P.load_amend_dict(data1, final_data0)
-    print(final_info_sentword['OPPO'])
-    items = model.most_similar(u'好评', topn=20)
-    print('“好评”一词的相似的词语')
-    for word, sim_par in items:
-        print(word, sim_par)
-
 
     stopwords_path='../论文/中文停用词/stopwords'
     path='C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt'
+    path0='C:\\Users\\Administrator\\Desktop\\data\\评论\\df_info.csv'
+    path1='C:\\Users\\Administrator\\Desktop\\data\\评论\\final_info_sentword.json'
     all_text=[]
     with open(path,'r',encoding='utf-8') as f:
         for line in f.readlines():
             lines=line.strip().split(' ')
             all_text.append(lines)
         f.close()
-    comment_train, comment_test = train_test_split(all_text, test_size = 0.5)
-    
-    M=ldamodel(20,5,0.1,0.1,0.1,comment_train,100)
+    comment_train, comment_test = train_test_split(all_text, test_size = 0.1)
+
+
+
+
+
+    M=ldamodel(20,5,0.1,0.1,0.1,comment_train,100,final_info_sentword=final_info_sentword,df_info=df_info)
     word2id,id2word,cut_corpus_id,wordnum=M.createdictionary(comment_train)
     M.initial(cut_corpus_id)
     start=time.time()
@@ -484,23 +402,8 @@ if __name__=='__main__':
     print('gibbssampling stage use {0} second'.format(end-start))
     test0=comment_test[0]
     M.predict(test0,word2id)
-
-
-
-
-
-
-    
-
-            
-
-
-
-
-
-
-        
-        
-
-
-        
+    info = psutil.virtual_memory()
+    print(u'内存使用：', psutil.Process(os.getpid()).memory_info().rss)
+    print(u'总内存：', info.total)
+    print(u'内存占比：', info.percent)
+    print(u'cpu个数：', psutil.cpu_count())
