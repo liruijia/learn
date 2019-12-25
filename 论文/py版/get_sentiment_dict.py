@@ -15,7 +15,7 @@
 强度没有办法进行更新只能每次相应的修改
 '''
 
-
+from __future__ import unicode_literals
 import sys
 sys.path.append('G:/anconada/envs/py36/lib/site-packages')
 from gensim.models  import word2vec
@@ -25,6 +25,7 @@ import json
 import psutil
 import os
 import pandas as pd
+import random
 
 class sentiment_dict():
     def __init__(self):
@@ -88,7 +89,11 @@ class sentiment_dict():
                             # print('word:{0} can find similar word :{1}'.format(word,sim_word))
                         else:
                             # print('word:{0} can not find similar word'.format(word))
-                            final_data[word] = [4, 3]
+                            sentiment_lable=random.randint(1,7)
+                            power_lable=3
+                            final_data[word]=[sentiment_lable,power_lable]
+
+
         print('词语词典建立完成*************')
         return final_data
 if __name__=='__main__':
@@ -116,7 +121,11 @@ if __name__=='__main__':
 
     data1=pd.read_csv(path1,engine='python')
     df_info=pd.DataFrame(columns=['情感分类'])
-    df_info['情感分类']=data1['情感分类'].unique().tolist()
+    ui=data1['情感分类'].unique().tolist()
+    for uu in ui:
+        if uu==None:
+            ui.pop(ui.index(None))
+    df_info['情感分类']=ui
     df_info['情感大分类']=df_info['情感分类'].map({'PA':1,'PE':1,
                                              'PD':2, 'PH':2, 'PG':2, 'PB':2, 'PK':2,
                                         'NA':3,'NB':4,'NT':4,'NH':4,'PF':4,'NI':5,'NC':5,'NG':5,
@@ -127,37 +136,37 @@ if __name__=='__main__':
                                             'NE':6,'ND':6,'NN':6,'NK':6,'NL':6,'PC':7})
     df_info['情感大分类_表达']=df_info['情感大分类'].map({2:1,3:2,6:2,4:3,5:3,7:3,1:4})
     df_info['情感大分类_态度']=df_info['情感大分类'].map({1:0,2:0,3:1,4:1,5:1,6:1,7:1})
+    #print(df_info)
 
     df_info.to_csv('C:\\Users\\Administrator\\Desktop\\data\\评论\\df_info.csv')
 
     final_info_sentword=P.load_amend_dict(data1,final_data0)
-    with open('C:\\Users\\Administrator\\Desktop\\data\\评论\\final_info_sentword.json','w',encoding='utf-8') as fw:
-        str=json.dumps(final_info_sentword)
-        fw.write(str)
-        #json.dump(final_info_sentword,fw) #也可以直接使用这种方法
+    with open('C:\\Users\\Administrator\\Desktop\\data\\评论\\final_info_sentword.txt','w',encoding='utf-8') as fw:
+        fw.write(str(final_info_sentword)) #也可以直接使用这种方法
+
     print(final_info_sentword['OPPO'])
     items=model.most_similar(u'好评',topn=20)
     print('“好评”一词的相似的词语')
     for word ,sim_par in items:
         print(word,sim_par)
+
+    print('没有删除对象之前的内存占用情况**************')
     info = psutil.virtual_memory()
-    print('*'*30)
+    print('*' * 30)
     print(u'内存使用：', psutil.Process(os.getpid()).memory_info().rss)
     print(u'总内存：', info.total)
     print(u'内存占比：', info.percent)
     print(u'cpu个数：', psutil.cpu_count())
 
+    del items
+    del final_info_sentword
+    del df_info
+    del data1
+    del sentences
+    print('删除了 items,final_info_sentword,df_info,data1,sentences')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print('删除内存之后的内存占用情况********')
+    print(u'内存使用：', psutil.Process(os.getpid()).memory_info().rss)
+    print(u'总内存：', info.total)
+    print(u'内存占比：', info.percent)
+    print(u'cpu个数：', psutil.cpu_count())

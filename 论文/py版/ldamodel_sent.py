@@ -38,6 +38,7 @@ from gensim.models  import word2vec
 from sklearn.feature_extraction.text  import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 #from guppy import hpy
+import json
 import psutil
 import os
 
@@ -376,11 +377,8 @@ class ldamodel():
     
   
 if __name__=='__main__':
-
     stopwords_path='../论文/中文停用词/stopwords'
     path='C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt'
-    path0='C:\\Users\\Administrator\\Desktop\\data\\评论\\df_info.csv'
-    path1='C:\\Users\\Administrator\\Desktop\\data\\评论\\final_info_sentword.json'
     all_text=[]
     with open(path,'r',encoding='utf-8') as f:
         for line in f.readlines():
@@ -388,21 +386,44 @@ if __name__=='__main__':
             all_text.append(lines)
         f.close()
     comment_train, comment_test = train_test_split(all_text, test_size = 0.1)
-
-
-
+    path_1 = 'C:/Users/Administrator/Desktop/data/评论/final_info_sentword.txt'
+    f = open(path_1, 'r', encoding='utf-8')
+    data = f.read()
+    test = re.sub('\'', '\"', data)
+    test= test.lstrip('\ufeff')
+    final_info_sentword = json.loads(test)
+    path_2='C:/Users/Administrator/Desktop/data/评论/df_info.csv'
+    df_info=pd.read_csv(path_2,engine='python')
 
 
     M=ldamodel(20,5,0.1,0.1,0.1,comment_train,100,final_info_sentword=final_info_sentword,df_info=df_info)
     word2id,id2word,cut_corpus_id,wordnum=M.createdictionary(comment_train)
+
+    info = psutil.virtual_memory()
+
+    print('没有运行initial 之前的内存使用情况')
+    print(u'内存使用：', psutil.Process(os.getpid()).memory_info().rss)
+    print(u'总内存：', info.total)
+    print(u'内存占比：', info.percent)
+    print(u'cpu个数：', psutil.cpu_count())
+
     M.initial(cut_corpus_id)
     start=time.time()
+    info = psutil.virtual_memory()
+
+    print('没有运行Gibbs sampling 之前的内存使用情况')
+    print(u'内存使用：', psutil.Process(os.getpid()).memory_info().rss)
+    print(u'总内存：', info.total)
+    print(u'内存占比：', info.percent)
+    print(u'cpu个数：', psutil.cpu_count())
+
     M.gibbssampling(cut_corpus_id)
     end=time.time()
     print('gibbssampling stage use {0} second'.format(end-start))
     test0=comment_test[0]
     M.predict(test0,word2id)
-    info = psutil.virtual_memory()
+
+    print('运行Gibbs Sampling 之后的内存使用情况')
     print(u'内存使用：', psutil.Process(os.getpid()).memory_info().rss)
     print(u'总内存：', info.total)
     print(u'内存占比：', info.percent)

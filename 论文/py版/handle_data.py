@@ -141,7 +141,8 @@ class Loaddata():
                 #print(word,word.isalpha())
                 if word not in stop_words:
                     if word.isalpha() is True :
-                        new_doc.append(word)
+                        if len(word) >=2:
+                            new_doc.append(word)
                         #print(word)
             corpus.append(new_doc)
         f=open('C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt','w',encoding='utf-8')
@@ -312,9 +313,9 @@ if __name__=='__main__':
 
 if __name__=='__main__':
     P=Loaddata()
-    stopwords_path='../论文/中文停用词/stopwords'
+    stopwords_path='C:/Users/Administrator/Desktop/github/learn/learn/论文/中文停用词/stopwords/'
     path='C:/Users/Administrator/Desktop/data/评论/comment_info_final.csv'
     all_text=P.load_comment(stopwords_path,path)
-    path_list=os.listdir('C:\\Users\\Administrator\\Desktop\\data\\中文情感分析语料库')
-    load_comment_zwqgfxylk(stopwords_path, path)
+    #path_list=os.listdir('C:\\Users\\Administrator\\Desktop\\data\\中文情感分析语料库')
+    #load_comment_zwqgfxylk(stopwords_path, path)
  
