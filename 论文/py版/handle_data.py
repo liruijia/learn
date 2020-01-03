@@ -137,12 +137,15 @@ class Loaddata():
             new_c=re.sub(r'[%s,\t,\\]+'%punctuation,' ',c)
             cut_c=jieba.lcut(new_c)
             new_doc=[]
-            for word in cut_c:
-                #print(word,word.isalpha())
-                if word not in stop_words:
-                    if word.isalpha() is True :
-                        if len(word) >=2:
-                            new_doc.append(word)
+            if '未填写' in cut_c or new_c=='' or new_c=='\n':
+                continue
+            else:
+                for word in cut_c:
+                    #print(word,word.isalpha())
+                    if word not in stop_words:
+                        if word.isalpha() is True :
+                            if len(word) >=2:
+                                new_doc.append(word)
                         #print(word)
             corpus.append(new_doc)
         f=open('C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt','w',encoding='utf-8')
