@@ -97,6 +97,68 @@ class Loaddata():
         stop_words.add(u'hellip')
         stop_words.add(u'OTG')
         stop_words.add('NFC ')
+        stop_words.add(u'用户')
+        stop_words.add(u'vivo')
+        stop_words.add(u'ac')
+        stop_words.add(u'acede')
+        stop_words.add(u'adreno')
+        stop_words.add(u'al')
+        stop_words.add('amoed')
+        stop_words.add(u'amol')
+        stop_words.add(u'amoled')
+        stop_words.add(u'amp')
+        stop_words.add(u'android')
+        stop_words.add(u'app')
+        stop_words.add(u'applepay')
+        stop_words.add(u'ast')
+        stop_words.add(u'ave')
+        stop_words.add(u'awsl')
+        stop_words.add(u'ac')
+        stop_words.add(u'ace')
+        stop_words.add(u'adreno')
+        stop_words.add(u'')
+        stop_words.add(u'ai')
+        stop_words.add(u'bi')
+        stop_words.add(u'bilingbiling')
+        stop_words.add(u'bms')
+        stop_words.add(u'boost')
+        stop_words.add(u'breeno')
+        stop_words.add(u'buff')
+        stop_words.update([u'ace', u'acede', u'adreno', u'al',  u'amol', u'amoled', u'ap', u'app',  u'bms',
+         u'breeno', u'buff',  u'bull', u'call', u'carry', u'cf', u'characteristic', u'color', u'coloros', u'colos',
+         u'con', u'cooooool', u'cop', u'cpu', u'dc', u'deg', u'der', u'designed', u'desirehd', u'dj', u'dolbya',
+         u'dsp', u'dx', u'ed',u'ee', u'eis', u'emmc', u'emmm', u'emmmm', u'emmmmmm', u'epsilon', u'fandx',
+         u'fashion', u'fgo', u'fi',u'find', u'findx',u'fingx', u'flyme', u'for', u'forall', u'fylme', u'gai',
+         u'gan', u'gb', u'gg', u'ghz',u'gt', u'hd', u'hdr', u'hearts', u'hh', u'hhh', u'hiahiahia', u'hifi',
+         u'htc', u'huawei', u'hz', u'iacute',u'igrave',u'imei', u'ing', u'ios', u'ip', u'iphone', u'iphonex',
+         u'iphonexr', u'iphonexsmax', u'iqoo', u'iqooneo',u'it',u'jpg',u'key',u'lcd', u'ldquo', u'led',
+         u'link', u'll', u'logo', u'lowast', u'lsquo', u'lt', u'mae', u'man', u'mate', u'maters',
+         u'max', u'mcu', u'mdash', u'mei', u'meui', u'mi', u'miui', u'mm', u'monster', u'mvp', u'nabla', u'nb',
+         u'nbsp', u'nex',u'nfc',u'nive', u'no', u'note', u'nova', u'np', u'npc', u'ns', u'ntsc', u'oa',
+         u'oacute', u'ofresh', u'ograve',u'ois', u'ojbk', u'olecd', u'oled',u'omega', u'oo', u'oopo',
+         u'op', u'opo', u'opoo', u'opop', u'opp',u'oppeo'])
+        stop_words.update([u'oppk',u'oppofind', u'oppopay', u'opporeno', u'opporenoace', u'opporenoz', u'os',
+                           u'ov', u'pc', u'pd', u'pei', u'pius', u'pl', u'play', u'plus', u'poop', u'popo', u'pp',
+                           u'ppo', u'ppt', u'prime', u'pro', u'ps', u'psi', u'pupil', u'qc', u'qp', u'qq', u'quot',
+                           u'qwa', u'ram', u'rdquo', u're', u'realme', u'reao', u'redlmex', u'ren', u'reno',
+                           u'renoace', u'renoz', u'rgb', u'rho', u'rog', u'root', u'rreeno', u'rsquo', u'se', u'sigma',
+                           u'sim', u'sim卡', u'soc', u'soloop', u'steady', u'super', u'supervooc', u'supp', u'surface',
+                           u'times', u'touch', u'tuv', u'type', u'uc', u'ufs', u'ui', u'ultra', u'upsilon', u'usb', u'vc',
+                           u'very', u'vio', u'vip', u'vivo', u'vlog', u'voo', u'vooc', u'vpn', u'wd', u'wi', u'wife',
+                           u'wifi', u'windowsphone', u'xmax', u'xr', u'xs', u'xsm', u'xsmas', u'xsmax', u'yen', u'zoom', u'zzzz']
+)
+        stop_words.add(u'手机')
+        stop_words.add(u'')
+        path='C:/Users/Administrator/Desktop/data/评论/stop_words.txt'
+        stop_words=list(stop_words)
+        print('总共有{0}个停用词'.format(len(stop_words)))
+        print(stop_words[100:150])
+        with open(path,'w',encoding='utf-8') as f:
+            for word in stop_words:
+                f.write(word)
+                f.write('\n')
+            f.close()
+
 
 
         print('所有的停用词加载完成')
@@ -135,17 +197,14 @@ class Loaddata():
         corpus=[]
         for c in data_comment:
             new_c=re.sub(r'[%s,\t,\\]+'%punctuation,' ',c)
-            cut_c=jieba.lcut(new_c)
+            cut_c=jieba.cut(new_c)
             new_doc=[]
-            if '未填写' in cut_c or new_c=='' or new_c=='\n':
-                continue
-            else:
-                for word in cut_c:
-                    #print(word,word.isalpha())
-                    if word not in stop_words:
-                        if word.isalpha() is True :
-                            if len(word) >=2:
-                                new_doc.append(word)
+            for word in cut_c:
+                #print(word,word.isalpha())
+                if word not in stop_words:
+                    if word.isalpha() is True :
+                        if len(word) >=2:
+                            new_doc.append(word)
                         #print(word)
             corpus.append(new_doc)
         f=open('C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt','w',encoding='utf-8')

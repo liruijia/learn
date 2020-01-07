@@ -1,7 +1,8 @@
 #对语料库进行聚类分析
 #利用Kmeans进行分析
 
-
+import sys
+sys.path.append('G:/anconada/envs/py36/lib/site-packages')
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
@@ -9,11 +10,21 @@ import jieba
 import matplotlib.pyplot as plt
 from gensim.models import word2vec
 import  pandas as pd
+import numpy as np
+from prettytable import PrettyTable
+import copy
 
 
 
 path='C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt'
+path_stop='C:/Users/Administrator/Desktop/data/评论/stop_words.txt'
+stpwrd_dic = open(path_stop, 'rb')
+stpwrd_content = stpwrd_dic.read()
+#将停用词表转换为list
+stpwrdlst = stpwrd_content.splitlines()
+stpwrd_dic.close()
 
+print('总共有{0}个停用词'.format(len(stpwrdlst)))
 corpus=[]
 with open(path,'r',encoding='utf-8') as f:
     for line in f.readlines():
@@ -21,20 +32,51 @@ with open(path,'r',encoding='utf-8') as f:
         corpus.append(lines)
 
 #对文档进行向量化
-vectorizer = CountVectorizer()
+vectorizer = CountVectorizer(stop_words=stpwrdlst)
 transformer = TfidfTransformer()
 tfidf = transformer.fit_transform(vectorizer.fit_transform(corpus))
 weight_doc=tfidf.toarray()
 
+count_matrix=vectorizer.fit_transform(corpus).toarray()
+word=vectorizer.get_feature_names()
+print(word[:100])
+oi=vectorizer.vocabulary_
+table=PrettyTable(['word','tf'])
+df=pd.DataFrame(columns=['word','tf'])
+sum_count=np.sum(count_matrix,axis=0)
+print('sum_count',sum_count.shape)
+sum_c_doc=np.sum(count_matrix,axis=1)
+
+print(sum_count.shape)
+count_m=[]
+tf=copy.deepcopy(count_matrix)
+m,n=count_matrix.shape
+print(sum_c_doc[0])
+
+for i in range(m):
+    for j in range(n):
+        tf[i,j]=tf[i,j]/(sum_c_doc[i]+1)
+print(tf)
+for word,id in oi.items():
+    count_m.append([word,sum_count[id]])
+
+scm=list(sorted(count_m,key=lambda x:x[1],reverse=True))
+
+for i in range(20):
+    print(scm[i][0],scm[i][1])
 word_list = vectorizer.get_feature_names()
 with open('C:/Users/Administrator/Desktop/data/评论/word_list.txt','w',encoding='utf-8') as f:
     for word in  word_list:
         f.write(word+' ')
     f.write('\r\n\r\n')
     f.close()
- 
-#对token进行向量化
+print(weight_doc)
 
+
+
+
+#对token进行向量化
+'''
 model=word2vec.Word2Vec(word2vec.Text8Corpus(path),size=500,window=5,min_count=1)
 
 vocabulary_word={}
@@ -85,7 +127,7 @@ def density_plot(data):
     return plt
 for i in range(20):
     density_plot(data[r[u'聚类类别']==i])
-
+'''
 
 
 
