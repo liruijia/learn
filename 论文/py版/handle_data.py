@@ -4,6 +4,8 @@ from prettytable import PrettyTable
 import re 
 import jieba
 import os
+from imblearn.over_sampling import SMOTE
+
 import copy
 from zhon.hanzi import punctuation
 from scipy.misc import imread
@@ -16,6 +18,10 @@ import numpy as np
 import random
 from prettytable import PrettyTable
 import gc
+import seaborn as sns
+import matplotlib.pyplot as plt
+from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import RandomOverSampler
 
 
 
@@ -189,8 +195,36 @@ class Loaddata():
             f.close()
         print('{0}篇{1}文章加载完成'.format(i,type_content))
         return sentences
-    
-    def load_comment(self,stopwords_path,path):
+    def load_comment_pad(self,stopwords_path,path_neg,type):
+        stop_words=list(self._loadstopwords(stopwords_path))
+        #comment_info=pd.read_csv(path,engine='python')
+        #data_comment=comment_info['comment'].tolist()
+        corpus=[]
+        with open(path_neg,'r',encoding='utf-8') as f:
+            for line in f.readlines():
+                new_c=re.sub(r'[%s,\t,\\]+'%punctuation,' ',line)
+                cut_c=jieba.cut(new_c)
+                new_doc=[]
+                for word in cut_c:
+                    #print(word,word.isalpha())
+                    if word not in stop_words:
+                        if word.isalpha() is True :
+                            new_doc.append(word)
+                            #print(word)
+                corpus.append(new_doc)
+            f.close()
+        if type=='neg':
+            f=open('C:/Users/Administrator/Desktop/data/中文情感分析语料库/pda/cut_pda_neg.txt','w',encoding='utf-8')
+        else:
+            f=open('C:/Users/Administrator/Desktop/data/中文情感分析语料库/pda/cut_pda_pos.txt','w',encoding='utf-8')
+
+        for i in corpus:
+            f.write(' '.join(i) )
+            f.write('\n')
+        f.close()
+        print('已经加载完毕评论形成corpus***************')
+        return corpus
+    def load_comment_oppo(self,stopwords_path,path):
         stop_words=list(self._loadstopwords(stopwords_path))
         comment_info=pd.read_csv(path,engine='python')
         data_comment=comment_info['comment'].tolist()
@@ -373,11 +407,55 @@ if __name__=='__main__':
     word2id,id2word,corpus,wordnum=M.getdagword(all_text)
 '''
 
+def random_sample(smin,smax,n):
+    '''
+
+    :param smin: 少数类样本集合 list
+    :param smax: 多数类样本集合 list
+    :return: smin_new,smax_new
+    '''
+    smin_new=copy.deepcopy(smin)
+    smax_new=copy.deepcopy(smax)
+    n1=len(smin_new)
+    n2=len(smax_new)
+    print(type(smin_new))
+    print(type(smax_new))
+    i=0
+    random.randint(0, 2)
+    while True :
+        try:
+            print('删除之前两个list的长度smin_new:{0},smax_new:{1}'.format(n1,n2))
+            random_smin_id=random.randint(0,n1-1)
+            random_smax_id=random.randint(0,n2-1)
+            print('第{0}次循环'.format(i),random_smin_id)
+            print('第{0}次循环'.format(i), random_smax_id)
+            smin_new.append(smin[random_smin_id])
+            smax_new.pop(random_smax_id)
+            n1=len(smin_new)
+            n2=len(smax_new)
+            print('删除元素之后两个list的长度 smin_new ：{0}，smax_new:{1}'.format(n1,n2))
+            i+=1
+            if n1==n and n2==n:
+                break
+
+        except Exception as result:
+            print(result)
+    return smin_new,smax_new
+
+
+
+
+
+
+
+
+
 if __name__=='__main__':
     P=Loaddata()
     stopwords_path='C:/Users/Administrator/Desktop/github/learn/learn/论文/中文停用词/stopwords/'
-    path='C:/Users/Administrator/Desktop/data/评论/comment_info_final.csv'
-    all_text=P.load_comment(stopwords_path,path)
-    #path_list=os.listdir('C:\\Users\\Administrator\\Desktop\\data\\中文情感分析语料库')
-    #load_comment_zwqgfxylk(stopwords_path, path)
- 
+    path_neg='C:/Users/Administrator/Desktop/data/中文情感分析语料库/pda/neg.txt'
+    path_pos='C:/Users/Administrator/Desktop/data/中文情感分析语料库/pda/pos.txt'
+    all_text_neg=P.load_comment_pad(stopwords_path,path_neg,type='neg')
+    all_text_pos=P.load_comment_pad(stopwords_path,path_pos,type='pos')
+#切分好之后观察其是否可以通过kmeans进行聚类
+

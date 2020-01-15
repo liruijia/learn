@@ -289,7 +289,7 @@ class ldamodel_nosent():
 
 
 if __name__ == '__main__':
-    path = 'C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt'
+    path ='C:/Users/Administrator/Desktop/data/中文情感分析语料库/pda/cut_pda_all.txt'
     all_text = []
     with open(path, 'r', encoding='utf-8') as f:
         for line in f.readlines():
