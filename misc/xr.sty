@@ -1,0 +1,207 @@
+%%% ====================================================================
+%%%  @LaTeX-style-file{
+%%%     author          = "David Carlisle",
+%%%     version         = "5.01",
+%%%     date            = "20 July 1993",
+%%%     time            = "10:57:34 BST",
+%%%     filename        = "xr.sty",
+%%%     address         = "Computer Science Department
+%%%                        Manchester University
+%%%                        Oxford Road
+%%%                        Manchester
+%%%                        England
+%%%                        M13 9PL",
+%%%     telephone       = "+44 61 275 6139",
+%%%     FAX             = "+44 61 275 6236",
+%%%     checksum        = "04455 207 971 7348",
+%%%     email           = "carlisle@cs.man.ac.uk (Internet)",
+%%%     codetable       = "ISO/ASCII",
+%%%     keywords        = "LaTeX, \ref, \pageref, \label",
+%%%     supported       = "yes",
+%%%     docstring       = "
+%%%
+%%%     xr.sty
+%%%
+%%%     A style which allows the use \[page]ref in one file to access
+%%%     labels defined by \label in another document.
+%%%     Each such file which is to be cross referenced is declared with
+%%%     the \externaldocument command.
+%%%
+%%%     Versions 1-4 of this style were written by Jean-Pierre Drucbert
+%%%
+%%%     Version 5 re-implements the main mechanism, and adds an
+%%%     optional argument to allow the user to resolve conflicts if two
+%%%     files use the same \label.
+%%%
+%%%     The checksum field above was produced by
+%%%     Robert Solovay's checksum utility.",
+%%%  }
+%%% ====================================================================
+%
+% Version 5.00 07 July 1993
+%  New mechanism (\read instead of \input).
+%
+% Version 5.01 20 July 1993
+%  V5.00 did not import aux files of \include'ed files. (Reported by
+%  Jean-Pierre Drucbert.)
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%<*x>
+% This file may be used without modification as a style (.sty) file.
+%
+% If you have Mittelbach's doc.sty, this file may be formatted with a
+% command like:
+%                latex xr.sty
+%
+% If you have the Mittelbach/Duchier/Braams docstrip utility, you may
+% produce a faster loading .sty file. Rename this file to: xr.doc
+% Then run this file through *plain* TeX:
+%                tex xr.doc
+% This should produce the file xr.sty.
+% If you do not have plain TeX on your system, you can trick LaTeX into
+% doing the work as follows:
+%                latex \def\fmtname{plain} \input xr.doc
+% Note that you may need to quote the arguments here to stop your
+% operating system treating the \ characters incorrectly.
+%
+%                latex xr.doc
+% Will produce a typeset version of the documentation, as above.
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\plain{plain}\ifx\fmtname\plain\csname fi\endcsname
+     \def\batchfile{xr.doc}
+     \input docstrip
+     \preamble
+
+     Do not distribute the stripped version of this file.
+     The checksum in the header refers to the documented version.
+
+     \endpreamble
+     \generateFile{xr.sty}{t}{\from{xr.doc}{}}
+     \endinput
+\fi
+%
+\ifcat a\noexpand @\let\next\relax\else\def\next{%
+    \documentstyle[doc]{article}\MakePercentIgnore}\fi\next
+%
+%\def\eatmodule<#1>{}\eatmodule
+%</x>
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \textwidth=355pt   ^^A Allow macrocode text with 72 columns.
+% \CodelineIndex     ^^A Code lines numbered.
+% \DisableCrossrefs  ^^A No Cross references.
+% \MakeShortVerb{\"} ^^A "\foo" works like \verb+\foo+
+%
+% \title{xr.sty}
+% \author{D. P. Carlisle^^A
+% \thanks{The Author of Versions 1--4 was Jean-Pierre Drucbert}}
+% \date{20 July 1993}
+%
+% \begin{document}
+% \maketitle
+%
+% This style implements a system for eXternal References.
+%
+% If one document needs to refer to sections of another, say "aaa.tex",
+% then this style may be given as a "\documentstyle" option in the main
+% file, and the command "\externaldocument{aaa}" given in the preamble.
+%
+% Then you may use "\ref" and "\pageref" to refer to anything which has
+% been given a "\label" in either "aaa.tex" or the main document.
+% You may declare any number of such external documents.
+%
+% If any of the external documents, or the main document, use the same
+% "\label" then an error will occur as the label will be multiply
+% defined. To overcome this problem "\externaldocument" has an optional
+% argument. If you declare "\externaldocument[A-]{aaa}" Then all
+% references from "aaa" are prefixed by "A-". So for instance, if a
+% section of "aaa" had "\label{intro}", then this could be referenced
+% with "\ref{A-intro}". The prefix need not be "A-", it can be any
+% string chosen to ensure that all the labels imported from external
+% files are unique. Note however that if your style declares certain
+% active characters (":" in French, \verb|"| in German) then these
+% characters can not usually be used in "\label", and similarly may not
+% be used in the optional argument to "\externaldocument".
+%
+% \typeout{End of the Introduction and Examples.}
+% \typein[\answer]%
+%   {Do you want an annotated listing of the macro definitions (y/n) ?}
+% \def\next{y}\ifx\answer\next\else\expandafter\stop\fi
+%
+% \section{The macros}
+% Check for the optional argument.
+%    \begin{macrocode}
+\def\externaldocument{\@ifnextchar[{\XR@}{\XR@[]}}
+%    \end{macrocode}
+%
+% Save the optional prefix. Start processing the first "aux" file.
+%    \begin{macrocode}
+\def\XR@[#1]#2{{%
+  \makeatletter
+  \def\XR@prefix{#1}%
+  \XR@next#2.aux\relax\\}}
+%    \end{macrocode}
+%
+% Process the next "aux" file in the list and remove it from the head of
+% the list of files to process.
+%    \begin{macrocode}
+\def\XR@next#1\relax#2\\{%
+  \edef\XR@list{#2}%
+  \XR@loop{#1}}
+%    \end{macrocode}
+%
+% Check whether the list of "aux" files is empty.
+%    \begin{macrocode}
+\def\XR@aux{%
+  \ifx\XR@list\@empty\else\expandafter\XR@explist\fi}
+%    \end{macrocode}
+%
+
+% Expand the list of aux files, and call "\XR@next" to process the first
+% one.
+%    \begin{macrocode}
+\def\XR@explist{\expandafter\XR@next\XR@list\\}
+%    \end{macrocode}
+%
+% If the "aux" file exists, loop through line by line, looking for
+% "\newlabel" and "\@input". Otherwise process the next file in the
+% list.
+%    \begin{macrocode}
+\def\XR@loop#1{\openin\@inputcheck#1\relax
+  \ifeof\@inputcheck
+    \typeout{^^JNo file #1^^JLABELS NOT IMPORTED.^^J}%
+    \expandafter\XR@aux
+  \else
+    \typeout{IMPORTING LABELS FROM #1}%
+    \expandafter\XR@read\fi}
+%    \end{macrocode}
+%
+% Read the next line of the aux file.
+%    \begin{macrocode}
+\def\XR@read{%
+  \read\@inputcheck to\XR@line
+%    \end{macrocode}
+% The "..." make sure that "\XR@test" always has sufficient arguments.
+%    \begin{macrocode}
+  \expandafter\XR@test\XR@line...\XR@}
+%    \end{macrocode}
+%
+% Look at the first token of the line.
+% If it is "\newlabel", do the "\newlabel". If it is "\@input", add the
+% filename to the list of files to process. Otherwise ignore.
+% Go around the loop if not at end of file. Finally process the next
+% file in the list.
+%    \begin{macrocode}
+\long\def\XR@test#1#2#3#4\XR@{%
+  \ifx#1\newlabel
+    \newlabel{\XR@prefix#2}{#3}%
+  \else\ifx#1\@input
+     \edef\XR@list{\XR@list#2\relax}%
+  \fi\fi
+  \ifeof\@inputcheck\expandafter\XR@aux
+  \else\expandafter\XR@read\fi}
+%    \end{macrocode}
+%
+% \end{document}
+\endinput

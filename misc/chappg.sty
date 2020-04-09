@@ -1,0 +1,15 @@
+% Author: Max Hailperin <max@nic.gac.edu>
+%  Define \thepage to output chapter-page (such as 1-3, 5-2, etc.)
+%  and have each chapter's page number begin on 1.
+% Original source: TeXMaG Vol. 5, No. 3 (part 1)
+%
+% \documentstyle[chappg]{report} or whatnot:
+
+\renewcommand{\thepage}{\arabic{chapter}-\arabic{page}}% chapter-page numbering
+\@addtoreset{page}{chapter}% reset page number when chapter is stepped
+% The next magic makes the page counter be reset to one rather than zero
+\def\@stpelt#1{\global\csname c@#1\endcsname
+               \expandafter\ifx \csname#1\endcsname \page
+                  \@ne
+               \else
+                  \z@ \fi}

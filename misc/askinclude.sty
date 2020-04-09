@@ -1,0 +1,96 @@
+% askinclude.sty - interactive asking of included files 
+%
+% VERSION 1.0   November 7, 1991
+%
+% (c) 1991 by Pablo A. Straub.  Permission is granted to copy and use this
+% in any way and for any purpose, except direct commercial advantage,
+% provided that you retain this copyright notice.
+%
+% HISTORY
+%
+% 0.95  11/05/91  First beta-test version (asked two questions)
+% 0.99  11/05/91  Second beta-test version (asks one question; uses * and -.)
+% 1.0   11/07/91  Changed prompts (sent to comp.text.tex)
+%
+% Please send enhancements and corrections to straub@cs.umd.edu.
+%
+% USAGE
+%
+% \documentstyle[...,askinclude,...]{...}
+%
+% HOW IT WORKS
+%
+% The askinclude style option asks the user which files to include.  If
+% the user presses return, the files from the previous run are included
+% automatically (except on the first run, in which case all files are
+% included); if the answer is  *  all files are included; if the answer
+% is  -  no files are included; otherwise the specified files (separated
+% by commas, with no embedded spaces) are included.
+% 
+% RESTRICTIONS
+%
+% This file redefines \document, the command executed with \begin{document}.
+% It may be incompatible with other styles that also redefine \document.
+%
+% The user's input is not validated.  Anything that is not a * or a - or an
+% empty line is passed to \includeonly.
+%
+% ACKNOWLEDGEMENT
+%
+% Tom Scavo (scavo@cie.uoregon.edu) suggested saving the include file list
+% from the previous run and a simplified user interface.
+
+
+\def\@includeonly{\@gobble} % assume we do not include from last run
+
+\def\@inputs{*}             % assume all files included
+
+
+% determine which files to include
+
+\def\@star{*}       % used for comparing user's answer
+\def\@minus{-}      % ditto
+
+\typeout { }
+\typeout {Enter file(s) to include (separated by commas and no spaces),}
+\typeout {or enter * for all files, or enter - for none, or}
+\typein  [\inputfiles]{press Return if this run is the same as the last.}
+
+\ifx\inputfiles\@star           % all files included
+   % do nothing
+\else \ifx\inputfiles\@minus    % no files included
+   \includeonly{}
+   \def\@inputs{}
+\else \ifx\inputfiles\empty     % include according to previous run
+   \def\@includeonly#1{%
+     \gdef\@inputs{#1}
+     \ifx\@inputs\@star \else \global\@partswtrue\global\edef\@partlist{#1}\fi}
+\else
+   \def\@inputs{\inputfiles}    % include these files
+   \includeonly{\inputfiles}
+\fi\fi\fi
+
+
+% \document - redefinition of \begin{document} to handle last included files
+
+\def\document{\endgroup
+  \@colht\textheight  \@colroom\textheight \vsize\textheight
+   \columnwidth\textwidth \@clubpenalty\clubpenalty
+   \if@twocolumn \advance\columnwidth -\columnsep
+      \divide\columnwidth\tw@ \hsize\columnwidth \@firstcolumntrue
+   \fi
+  \hsize\columnwidth \linewidth\hsize
+  \begingroup\@floatplacement\@dblfloatplacement
+   \makeatletter\let\@writefile\@gobbletwo
+   \@input{\jobname.aux}\endgroup
+  \if@filesw \immediate\openout\@mainaux=\jobname.aux
+    \immediate\write\@mainaux{\relax}%
+    \immediate\write\@mainaux{\string\@includeonly\string{\@inputs\string}}%NEW
+  \fi
+  \def\@includeonly{} %NEW
+  \def\do##1{\let ##1\@notprerr}
+  \@preamblecmds
+  \let\do\noexpand
+  \@normalsize\everypar{}}
+
+% END OF FILE askinclude.sty

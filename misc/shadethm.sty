@@ -1,0 +1,187 @@
+\typeout{ LaTeX 2.09 substyle: ShadeThm <94/07/11 jh>}
+% ShadeThm.sty
+%   Shaded theorem environments in LaTeX 2.09 with \newshadetheorem instead of
+% \newtheorem.  Requires PostScript.
+%
+% USAGE
+%   Used as a LaTeX substyle
+%      \documentstyle[...,shadethm,...]{...}
+% it allows declarations like
+%      \newshadetheorem{theorem}{Theorem}
+% so that
+%      \begin{theorem}  $e=mc^2$  \end{theorem}
+% will produce the usual theorem text, only placed in a shaded box.
+%
+% REMARKS
+%  (1) You can of course have non-shaded environments, also.  The 
+%  \newtheorem command still works (but see Remark (2)).
+%  (2) Numbering within:
+%    LaTeX allows you to say \newtheorem{guess}{Conjecture}[section] so
+%  that at each new section the conjectures are numbered starting again
+%  at 1.  So does \newshadetheorem.
+%    LaTeX also allows you to say \newtheorem{remark}[guess]{Remark} so
+%  that remark and guess use the same counter: 
+%      \begin{guess} 
+%         Dinosaurs are small at one end, large in the middle,
+%         and very small again at the other end.
+%      \end{guess}
+%      \begin{remark}
+%         This conjecture is due to me.
+%      \end{remark}
+%   gets printed as
+%      Conjecture 1  Dinosaurs are small at one end, large in the middle, and
+%      very small again at the other end.
+%      Remark 2  This conjecture is due to me.
+%  The \newshadetheorem allows the same thing, but with one change.  If you want
+%  to refer to a theorem environment `xxx' that was declared with 
+%  \newshadetheorem{xxx}{Xxx} then you must call it `shadexxx': e.g.,
+%      \newshadetheorem{thm}{Theorem}
+%      \newshadetheorem{note}[shadethm]{Note}
+%  (references to non-shaded theorem environments, of course, go as usual).
+%  (3) Uses fancybox.sty and pstricks.sty.  They are available, for instance,
+%  in the TeX-archive at pip.shsu.edu.  In particular, they require PostScript
+%  for the shade.  If you want to figure out a way to, for example, use PiCTeX
+%  to shade, then that could work also.  (I use dvips; PSTricks may work with
+%  other PS drivers but it definitely works with dvips.)
+%
+% INSTALLATION
+%   Put this where your TeX looks for .sty files.  In emTeX that is probably
+%  c:\emtex\texinput\shadethm.sty.
+%   There are three parameters to set the default for (try it as it is, first).
+%    (i) thmshade  the darkness of the shading
+%    (ii) shadeparindent  the paragraph indentation inside the shaded text
+%    (iii) frameboxsep  the length by which the shade box surrounds the text
+% Find them by using your editor to find `PARAMETER'.
+%  If you want this file to input fancybox and pstricks (that is, you don't
+% want to ask for them yourself) uncomment those lines.
+%
+% BUGS
+%  1) Page breaks are a problem since it sets the theorem before it shades it.
+%  2) I haven't tested it with the new LaTeX.  
+%
+% HISTORY
+%  94VII11 jim hefferon hefferon@smcvax.smcvt.edu.  First written (after lots
+%    of sporadic tries, over months; I couldn't get any of the extant shading 
+%    macros to work with theorems) from a hint in TvZ's Fancybox writeup. 
+%    It's all so easy once you know how.
+%
+%\input{fancybox.sty}
+%\input{pstricks.sty}
+
+% PARAMETER: thmshade 
+% Set the default darkness for the shading.
+% I find .97 looks good out of my printer, but a darker shade like .92 is 
+% needed to make it copy well.  (PostScript sets 0 as black and 1 as white.)
+% This can be reset in each document, say with \newgray{thmshade}{.92}
+% (or with \newrgbcolor{thmshade}{num1 num2 num3} for color, I think).
+\newgray{thmshade}{.97}  
+
+% PARAMETER: saveparindent
+% Normally, in theorems, paragraphs retain their usual indent.  But inside
+% a minipage they lose their indent, so I need to restore it once I'm inside
+% the minipage that is to be shaded.   This can be changed inside of each 
+% document, say with \resetlength{\saveparindent}{0pt}.
+\newlength{\saveparindent}              %to have paragraphs default to their 
+\setlength{\saveparindent}{\parindent}  %usual indent inside the minipage
+
+% PARAMETER: frameboxsep
+% I think the shading looks best if the text doesn't run all the way to the
+% exact edge of the gray.  That is, I like the gray to overlap outside the text
+% box a little.  That amount is this number.  This can be changed inside of
+% each document, say with \resetlength{\frameboxsep}{.2ex}.
+\newlength{\frameboxsep}        % user can change in a .sty file or on 
+\setlength{\frameboxsep}{2pt}   % a per-document basis.
+
+\newbox{\shadesavebox}        % no `@'; users can redefine shadebox if they want
+\newenvironment{shadebox}%    % shadow boxes or something. 
+{\beginsbox{\shadesavebox}\begin{minipage}{\textwidth}%
+\setlength{\parindent}{\saveparindent}}%
+{\end{minipage}\endsbox%
+{\begin{trivlist}\item[]%
+\psframebox*[fillcolor=thmshade,boxsep=false,framesep=\frameboxsep]{%
+\usebox{\shadesavebox}}%
+\end{trivlist}}}
+
+%  The definition of \newshadetheorem is modelled on the one for \newtheorem
+% in latex.tex.
+%  The invocation possibilities are:
+%   \newshadetheorem{NAME}{TEXT}[COUNTER]
+%      e.g., \newshadetheorem{theorem}{Theorem}[section] meaning to allow
+%      one to say \begin{theorem} $e=mc^2$ \end{theorem} to produce
+%        Theorem 1.1.1 e=mc2
+%      shaded and numbered by section.
+%   \newshadetheorem{NAME}[OLDNAME]{TEXT}
+%      e.g., \newshadetheorem{remark}[theorem]{Remark} meaning to allow
+%      one to say \begin{remark} Obvious. \end{remark} to produce
+%        Remark 1.1.2  Obvious.
+%      shaded and numbered with the same counter used for theorems.
+% The flowchart for parsing the arguments goes like this.
+%   1) \newshadetheorem{#1}    (note  #1<--NAME)
+%   2) If the next character is `[' then we have the second case.  This
+%       is handled by \shade@othm
+%   3) If not, go to \shade@nthm.  There are two cases here, either there
+%       is an optional argument (this is handled by \shade@xnthm) or there is
+%       not (this is handled by \shade@ynthm).
+% (Possibly these cases could be folded somewhat as all use the same tail.)
+% Notice I have to have different names for the theorem and the environment.
+% I elected to call the theorem `xxx' by the name `shadexxx' so the user 
+% just says `\begin{xxx} ...' for the environment.   (All this is, of course,
+% just adapted from Lamport's code.)
+%
+\def\newshadetheorem#1{\@ifnextchar[{\shade@othm{#1}}{\shade@nthm{#1}}}
+
+\def\shade@othm#1[#2]#3{%
+\newtheorem{shade#1}[#2]{#3}%
+\newenvironment{#1}%
+{\begin{shadebox}\begin{shade#1}}%  
+{\end{shade#1}\end{shadebox}}}
+
+\def\shade@nthm#1#2{\@ifnextchar[{\shade@xnthm{#1}{#2}}{\shade@ynthm{#1}{#2}}}
+
+\def\shade@xnthm#1#2[#3]{%
+\newtheorem{shade#1}{#2}[#3]%
+\newenvironment{#1}%
+{\begin{shadebox}\begin{shade#1}}%
+{\end{shade#1}\end{shadebox}}}
+
+\def\shade@ynthm#1#2{%
+\newtheorem{shade#1}{#2}%
+\newenvironment{#1}%
+{\begin{shadebox}\begin{shade#1}}%
+{\end{shade#1}\end{shadebox}}}
+
+\endinput %end shadethm.sty
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-test.tex-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+\documentstyle[fancybox,pstricks,shadethm]{article}
+
+\newshadetheorem{theorem}{Theorem}
+\newshadetheorem{cor}[shadetheorem]{Corollary}
+\newtheorem{remark}[shadetheorem]{Remark}
+
+\begin{document}
+Here is some initial text before the shaded box.
+
+\begin{theorem}
+This is the text to be shaded.
+\end{theorem}
+
+This is some text after the first shade.
+It is separated from the environments by a blank line; that is 
+all handled as usual in \LaTeX.
+
+\begin{cor}
+This is more text to be shaded.
+It is numbered with the same counter as the environment above.
+
+Multiple paragraphs will be handled with the usual paragraph indentation,
+unless of course the user asks for a different paragraph indentation inside
+the environment.
+\end{cor}
+
+\begin{remark}
+More text.
+This time not set in shade, however it is numbered in the same sequence.
+\end{remark}
+
+Finishing text.
+\end{document}

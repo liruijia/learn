@@ -1,0 +1,56 @@
+% nofm.sty
+%
+% This is a LaTeX document style option for "n of m" style pagination.
+% It produces a centered header in the above style, and no footer;
+% variations to put the information elsewhere, incorporate other
+% information, or include the word "page" should be easy.  This option
+% works by recording the last page's page number in the .aux file
+% (using the standard label/pageref mechanism).  Therefore, you will
+% have to run LaTeX a second time if the number of pages changes, in
+% order to get correct output.
+%
+%     -- Max Hailperin, 9/27/88
+%
+% 25 Feb 91 - Don't clobber \pagestyle, redefine \ps@plain.
+%             Define \@lastpageref to eliminate warnings.
+%             clayton@thumper.bellcore.com
+ 
+ 
+% Make the plain page style be the same as the empty page style to
+% avoid having a footer-centered page number on the first page and on
+% index pages (in article style, anyway).
+ 
+\let \ps@plain = \ps@empty
+ 
+ 
+% The below is reproduced from the latex.tex file, version 2.09 of 27 October
+% 1986, Copyright (C) 1985 by Leslie Lamport, with the exception of the
+% marked change in the first line----vvvvvvvvvvvvvvvvvv.
+ 
+\def\enddocument{\@checkend{document}\label{@lastpage}\clearpage\begingroup
+\if@filesw \immediate\closeout\@mainaux
+\def\global\@namedef##1##2{}\def\newlabel{\@testdef r}%
+\def\bibcite{\@testdef b}\@tempswafalse \makeatletter\input \jobname.aux
+\if@tempswa \@warning{Label(s) may have changed.  Rerun to get
+cross-references right}\fi\fi\endgroup\deadcycles\z@\@@end}
+ 
+ 
+% Define a special-purpose \pageref to avoid having a "Reference
+% @lastpage undefined" warning on every page.
+ 
+\def\@lastpageref{%
+   \@ifundefined{r@@lastpage}{{\bf ??}}%
+    {\edef\@tempa{\@nameuse{r@@lastpage}}%
+     \expandafter\@cdr\@tempa\@nil\null
+    }%
+}
+ 
+ 
+% The page number is centered in the header.  Change the definitions
+% to make it something else.
+ 
+\def \@oddhead{\rm\hfil\thepage\ of \@lastpageref\hfil}
+\def \@evenhead{\@oddhead}
+\def \@oddfoot{}
+\def \@evenfoot{\@oddfoot}
+ 

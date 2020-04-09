@@ -1,0 +1,49 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LaTeX-Style zur Definition der 6-Punkt Braille-Schrift-Umgebung
+% V. 1.0                                                        11.11.88
+%
+% copyright  FernUniversit\"at Hagen          Nicht-kommerzielle
+%            Rechenzentrum                  Weitergabe an wissenschaft-
+%            J. Breuer / G. Barg            liche Institutionen erlaubt
+%            EARN: RZB02 at DHAFEU11
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Zugeh\"orige Dateien:
+%   braille.sty  diese Datei
+%   braille.tfm
+%   braille.pk  (bzw. braille.1500pk)  oder:
+%   braille.pxl (bzw. braille.1500pxl)
+% Ausgabe-Zeichenvorrat:
+%   alle druckbaren Zeichen nach deutscher 7 Bit ASCII /
+%   6-Punkt Braille-Zuordnung (also ohne Gro\ss{}buchstaben)
+% Aufruf:
+%   \begin{braille}    ...   \end{braille}
+% Eingabe:
+%   Gro\ss{}- und Kleinbuchstaben benutzbar,
+%   Umlaute und und Esszet nach der \"ublichen TeX-Konvention
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newenvironment{braille}%
+{\font\braille=braille
+\braille
+\def\"##1{\if##1a\char91%
+\else\if##1o\char92%
+\else\if##1u\char93%
+\else\if##1A\char91%
+\else\if##1O\char92%
+\else\if##1U\char93%
+\else\if##1s\char126%
+\fi\fi\fi\fi\fi\fi\fi}%
+\def\ss##1{\char126}%
+\begin{raggedright}
+\spaceskip=18pt
+\xspaceskip=18pt
+\newcount\oldtolerance \oldtolerance=\tolerance
+\newcount\oldpretolerance \oldpretolerance=\pretolerance
+\newcount\oldhyphenpenalty \oldhyphenpenalty=\hyphenpenalty
+\tolerance=10000\pretolerance=-10000\hyphenpenalty=0%trennt trotz flatterrand
+}%
+{
+\tolerance=\oldtolerance
+\pretolerance=\oldpretolerance
+\hyphenpenalty=\oldhyphenpenalty
+\end{raggedright}
+}%

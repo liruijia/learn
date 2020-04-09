@@ -1,0 +1,168 @@
+%% 
+%% This is file `varioref.sty', generated 
+%% on <1993/5/1> with the docstrip utility (2.1e).
+%% 
+%% The original source files were:
+%% 
+%% varioref.doc  (with options: `style')
+%% 
+%% 
+%% Copyright (C) 1992,1993 by Frank Mittelbach. All rights reserved. 
+%% 
+%% 
+%% IMPORTANT NOTICE: 
+%% 
+%% You are not allowed to change this file. You may however copy this 
+%% file to a file with a different name and then change the copy. 
+%% 
+%% You are NOT ALLOWED to distribute this file alone. You are NOT 
+%% ALLOWED to take money for the distribution or use of this file (or a 
+%% changed version) except for a nominal charge for copying etc. 
+%% 
+%% You are allowed to distribute this file under the condition that it is 
+%% distributed together with all files mentioned in readme.mz7. 
+%% 
+%% If you receive only some of these files from someone, complain! 
+%% 
+%% However, if these files are distributed by established suppliers as 
+%% part of a complete TeX distribution, and the structure of the 
+%% distribution would make it difficult to distribute the whole set of 
+%% files, *those parties* are allowed to distribute only some of the 
+%% files provided that it is made clear that the user will get a complete 
+%% distribution-set upon request to that supplier (not me). Notice that 
+%% this permission is not granted to the end user. 
+%% 
+%% For error reports in case of UNCHANGED versions see readme files. 
+%% 
+%% 
+%% 
+
+\def\filename{varioref}
+\def\fileversion{v0.1g}
+\def\filedate{93/02/14}
+\def\docdate {93/02/14}
+
+%% \CheckSum{257}
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+%%
+%% Style-option varioref to use with LaTeX v2.09
+%% Copyright (C) 1992-1993  Frank Mittelbach, all rights reserved.
+\@ifundefined{c@vrcnt}{}{\endinput}
+\typeout{Style option: `varioref'
+   \fileversion\space <\filedate> (FMi)}
+\typeout{English documentation
+ \@spaces\@spaces\space<\docdate> (FMi)}
+\newcounter{vrcnt}
+\def\vpageref{\protect\p@vpageref}
+\def\p@vpageref{\@ifnextchar[%
+  \@vpageref{\@vpageref[\reftextcurrent]}%
+}
+\def\@vpageref[#1]{\@ifnextchar[%
+  \@@vpageref{\@@vpageref[#1][\unskip\space]}}
+\def\@@vpageref[#1][#2]#3{%
+  \leavevmode\unskip
+  \global\advance\c@vrcnt\@ne
+  \@ifundefined{r@vr@\the\c@vrcnt}%
+         {\@namedef{r@vr@\the\c@vrcnt}{{??}{??}}}{}%
+  \edef\@tempa{\expandafter\expandafter\expandafter
+                \@cdr\csname r@vr@\the\c@vrcnt\endcsname
+                \@nil}%
+  \@ifundefined{r@xvr@\the\c@vrcnt}%
+         {\@namedef{r@xvr@\the\c@vrcnt}{{??}{??}}}{}%
+  \edef\@tempb{\expandafter\expandafter\expandafter
+                \@cdr\csname r@xvr@\the\c@vrcnt\endcsname
+                \@nil}%
+  {\let\@currentlabel\@empty\label{xvr@\the\c@vrcnt}}%
+  \ifx\@tempa\@tempb\else
+  \vref@err{***^^J%
+            * Warning: \noexpand\vref over page boundary
+                       \@tempa-\@tempb\space (may loop)^^J%
+            ***}%
+  \fi
+  \@ifundefined{r@#3}{\@namedef{r@#3}{{??}{??}}}{}%
+  \edef\@tempb{\expandafter\expandafter\expandafter
+                \@cdr\csname r@#3\endcsname
+                \@nil}%
+  \space
+  \ifx\@tempa\@tempb
+    #1%
+  \else
+    #2%
+    \is@pos@number\@tempb
+       {%
+        \is@pos@number\@tempa
+         {\@tempcnta\@tempa
+          \advance\@tempcnta\@ne
+         }%
+         {\@tempcnta\maxdimen}%
+        \ifnum \@tempb =\@tempcnta
+         \ifodd\@tempcnta
+           \if@twoside
+             \reftextfaceafter
+           \else
+             \reftextafter
+           \fi
+         \else
+           \reftextafter
+         \fi
+        \else
+          \advance\@tempcnta-2
+          \ifnum \@tempb =\@tempcnta
+            \ifodd\@tempcnta
+              \reftextbefore
+            \else
+              \if@twoside
+                \reftextfacebefore
+              \else
+                \reftextbefore
+              \fi
+            \fi
+          \else
+            \reftextfaraway{#3}%
+          \fi
+        \fi
+       }%
+       {\reftextfaraway{#3}}%
+  \fi
+  {\let\@currentlabel\@empty\label{vr@\the\c@vrcnt}}%
+}
+\def\vrefwarning{\let\vref@err\typeout}
+\let\vref@err\errmessage
+\def\vref{\protect\p@vref}
+\def\p@vref#1{%
+  \unskip~\ref{#1}%
+  \@vpageref[\unskip]{#1}%
+}
+\def\is@pos@number#1{\is@pos@num0#1\space\@nil}
+\def\is@pos@num{\afterassignment\is@pos@num@ \count@}
+\def\is@pos@num@#1\@nil{%
+  \if0#10%
+    \expandafter\@firstarg \else
+    \expandafter\@secondarg  \fi}
+\def\@firstarg#1#2{#1}
+\def\@secondarg#1#2{#2}
+\def\reftextvario#1#2{\ifodd\c@vrcnt #1\else#2\fi}
+\def\reftextfaceafter {on the \reftextvario{facing}{next} page}
+\def\reftextfacebefore{on the \reftextvario{facing}{preceding} page}
+\def\reftextafter     {on the \reftextvario{following}{next} page}
+\def\reftextbefore    {on the \reftextvario{preceding page}{page before}}
+\def\reftextcurrent   {on \reftextvario{this}{the current} page}
+\def\reftextfaraway#1{on page~\pageref{#1}}
+\def\fullref#1{\ref{#1} on page~\pageref{#1}}
+\endinput
+%% 
+%% End of file `varioref.sty'.
