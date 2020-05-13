@@ -14,65 +14,93 @@ import  pandas as pd
 import numpy as np
 from prettytable import PrettyTable
 import copy
+import json 
 
 
+path='C:/Users/Administrator/Desktop/data/corpus/handle_corpus_train_1.txt'
+str_data=open(path,'r',encoding='utf-8').read()
+data_js=json.loads(str_data.lstrip('\ufeff'))
+corpus=data_js['正面'][:2000]+data_js['反面'][:2000]
+corpus_total=[]
+for doc in corpus:
+    corpus_total.append(' '.join(doc))
 
-path='C:/Users/Administrator/Desktop/data/评论/cut_comment_1.txt'
-path_stop='C:/Users/Administrator/Desktop/data/评论/stop_words.txt'
-stpwrd_dic = open(path_stop, 'rb')
-stpwrd_content = stpwrd_dic.read()
-#将停用词表转换为list
-stpwrdlst = stpwrd_content.splitlines()
-stpwrd_dic.close()
-
-print('总共有{0}个停用词'.format(len(stpwrdlst)))
-corpus=[]
-with open(path,'r',encoding='utf-8') as f:
-    for line in f.readlines():
-        lines = line.lstrip('\ufeff').rstrip('\n')
-        corpus.append(lines)
 
 #对文档进行向量化
-vectorizer = CountVectorizer(stop_words=stpwrdlst)
+vectorizer = CountVectorizer()
 transformer = TfidfTransformer()
-tfidf = transformer.fit_transform(vectorizer.fit_transform(corpus))
+tfidf = transformer.fit_transform(vectorizer.fit_transform(corpus_total))
 weight_doc=tfidf.toarray()
 
-count_matrix=vectorizer.fit_transform(corpus).toarray()
-word=vectorizer.get_feature_names()
-print(word[:100])
-oi=vectorizer.vocabulary_
-table=PrettyTable(['word','tf'])
-df=pd.DataFrame(columns=['word','tf'])
-sum_count=np.sum(count_matrix,axis=0)
-print('sum_count',sum_count.shape)
-sum_c_doc=np.sum(count_matrix,axis=1)
 
-print(sum_count.shape)
-count_m=[]
-tf=copy.deepcopy(count_matrix)
-m,n=count_matrix.shape
-print(sum_c_doc[0])
+from  sklearn.decomposition import PCA
+pca=PCA()
+x_new=pca.fit_transform(weight_doc)
 
-for i in range(m):
-    for j in range(n):
-        tf[i,j]=tf[i,j]/(sum_c_doc[i]+1)
-print(tf)
-for word,id in oi.items():
-    count_m.append([word,sum_count[id]])
+#原来结果进行聚类
+plt.axis('off')
+plt.scatter(x_new[:][0],x_new[:][4])
+plt.show()
+# 进行聚类
 
-scm=list(sorted(count_m,key=lambda x:x[1],reverse=True))
 
-for i in range(20):
-    print(scm[i][0],scm[i][1])
-word_list = vectorizer.get_feature_names()
-with open('C:/Users/Administrator/Desktop/data/评论/word_list.txt','w',encoding='utf-8') as f:
-    for word in  word_list:
-        f.write(word+' ')
-    f.write('\r\n\r\n')
-    f.close()
-print(weight_doc)
+from sklearn.cluster import KMeans
+clf = KMeans(n_clusters=2)
+clf.fit(x_new)
 
+predict_label= clf.labels_
+
+import matplotlib.pyplot as plt
+mark = ['ob', 'Dg']
+legend=['sentiment_1','sentiment_2']
+plt.axis('off')
+for i in range(4000):
+    plt.plot(x_new[i][0], x_new[i][4], mark[clf.labels_[i]])
+
+#质心
+centroids =  clf.cluster_centers_
+for i in range(2):
+    plt.plot(centroids[i][0], centroids[i][4], mark[i], markersize = 12)
+    plt.text(centroids[i][0],centroids[i][4],legend[i],bbox=dict(facecolor='red',alpha=0.1))
+plt.savefig('C:/Users/Administrator/Desktop/论文/picture/聚类.png')
+plt.show()
+
+##            
+##count_matrix=vectorizer.fit_transform(corpus).toarray()
+##word=vectorizer.get_feature_names()
+##print(word[:100])
+##oi=vectorizer.vocabulary_
+##table=PrettyTable(['word','tf'])
+##df=pd.DataFrame(columns=['word','tf'])
+##sum_count=np.sum(count_matrix,axis=0)
+##print('sum_count',sum_count.shape)
+##sum_c_doc=np.sum(count_matrix,axis=1)
+##
+##print(sum_count.shape)
+##count_m=[]
+##tf=copy.deepcopy(count_matrix)
+##m,n=count_matrix.shape
+##print(sum_c_doc[0])
+##
+##for i in range(m):
+##    for j in range(n):
+##        tf[i,j]=tf[i,j]/(sum_c_doc[i]+1)
+##print(tf)
+##for word,id in oi.items():
+##    count_m.append([word,sum_count[id]])
+##
+##scm=list(sorted(count_m,key=lambda x:x[1],reverse=True))
+##
+##for i in range(20):
+##    print(scm[i][0],scm[i][1])
+##word_list = vectorizer.get_feature_names()
+##with open('C:/Users/Administrator/Desktop/data/评论/word_list.txt','w',encoding='utf-8') as f:
+##    for word in  word_list:
+##        f.write(word+' ')
+##    f.write('\r\n\r\n')
+##    f.close()
+##print(weight_doc)
+##
 
 
 
