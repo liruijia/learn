@@ -72,7 +72,7 @@ def get_sentiment_score(pinglun,pinglun_index):
 #找出来一部分的数据——找出其中多个店铺的评论来进行情感值得计算  此时主要是针对水杯数据 利用referenceid来进行店铺的辨别
 #每一个店铺有多个商品，因此要找到每一个店铺所包含的商品id
 path_info='C:/Users/Administrator/Desktop/data/评论/product_info_cup_before.csv'
-info_dianpu=pd.read_csv(path_info,engine='python',encodin='utf-8')
+info_dianpu=pd.read_csv(path_info,engine='python',encoding='utf-8')
 
 ii=info_dianpu['shop_id'].value_counts()
 
