@@ -572,65 +572,7 @@ if __name__ == '__main__':
 
 
     
-##    from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
-##    import scipy.cluster.hierarchy as sch
-##    from  sklearn.decomposition import PCA
-##    pca=PCA()
-##    x=M.topic_w
-##    x_new=pca.fit_transform(x)
-##    disMat = sch.distance.pdist(x_new,'euclidean') 
-##    Z = linkage(disMat,  method='ward')
-##    P=sch.dendrogram(Z)
-##    plt.title('Dendrogram for the Agglomerative Clustering')
-##    plt.xlabel('sample_index')
-##    plt.ylabel('distance')
-##    plt.show()
-##
-##    
-##    labels_1 = fcluster(Z, t=1, criterion='inconsistent')
-##    mark = ['or', 'ob', 'og', 'ok', '^r', '+r', 'sr', 'dr', '<r', 'pr','op','*p','*r','*b','*d','*k']
-##    j = 0 
-##    for i in label_pred:
-##        plt.plot([x_new[j,0]], [x_new[j,1]], mark[i], markersize = 5)
-##        j +=1
-##    topic_nums_new=np.max(labels_1)
-##    
-##    #根据聚类结果将topic进行合并
-##    m,n=x.shape
-##    new_twc=x
-##    twc_new=np.zeros([topic_nums_new,n])
-##    for i in range(topic_nums_new):
-##        ui=[j for j in range(len(labels_1)) if labels_1[j]==i+1]
-##        print(ui)
-##        for ji in ui:
-##            twc_new[i,:]+=new_twc[ji,:]
-##                
-##    #得到聚类之后的twc矩阵，进行聚类图展示
-##    plt.scatter(twc_new[:,1],twc_new[:,0])
-##    
-##    #相应的将stwc中的信息进行合并，最后显示各个情感下不同topic的Word信息 表
-##    m,n,p=M.sentiment_topic_word_count.shape
-##    m1,n1=M.sentiment_topic_count.shape
-##    stc_new = coo_matrix((m,topic_nums_new)).toarray()
-##    stwc_new=np.zeros([m,topic_nums_new,p])
-##
-##    for i in range(m):
-##        for j in range(topic_nums_new):
-##            ui=[jj for jj in range(len(labels_1)) if labels_1[jj]==j+1]
-##            for ji in ui:
-##                stwc_new[i,j,:]+=new_stwc[i,ji,:]
-##            stc_new[i,j]=sum(stwc_new[i,j,:])
-##    
-##    
-##    
-##    #得到sentiment_topic_word 
-##    stw_new=np.zeros((m,topic_nums_new,p))
-##    for i in range(m):
-##        for j in range(topic_nums_new):
-##            for k in range(p):
-##                stw_new[i, j, k] = (stwc_new[i, j, k] + 0.01)/(stc_new[i, j] + 0.01* V)
 
-    #画表-得到每个sentiment下的topic 下的top10word以及概率
 
     table=PrettyTable()
     topnum=20
@@ -663,75 +605,7 @@ if __name__ == '__main__':
         ui=[round(oo,3) for oo in ds[i,:]]
         table.add_row([i+1,ui,' '.join(comment_train[i][:6])+'...'])
     print(table)
-    #最后得到word-sentiment-vocabulary
-##    word_sentiment_vocabulary={}
-##    for i in range(p):
-##        values=stw_new[:,:,i]
-##        # 获取到了每一个主题下每一个词汇的值，根据其最大值所在位置，找到该所所在的情感
-##        m_index=np.argmax(values,axis=1)
-##        max_list=np.array([values[ii ,m_index[ii]] for ii in range(4)])
-##        max_index=np.argmax(max_list)
-##        word_sentiment_vocabulary[id2word[i]]=(max_index,max_list[max_index])   
 
-##    from scipy.cluster.hierarchy import linkage, dendrogram, fcluster
-##    import scipy.cluster.hierarchy as sch
-##    from  sklearn.decomposition import PCA
-##    pca=PCA()
-##    x=new_twc
-##    x_new=pca.fit_transform(x)
-##    disMat = sch.distance.pdist(x_new,'euclidean') 
-##    Z = linkage(disMat,  method='ward')
-##    P=sch.dendrogram(Z)
-##    plt.title('Dendrogram for the Agglomerative Clustering')
-##    plt.xlabel('sample_index')
-##    plt.ylabel('distance')
-##    plt.show()
-
-    
-#    labels_1 = fcluster(Z, t=1, criterion='inconsistent')
-##    mark = ['or', 'ob', 'og', 'ok', '^r', '+r', 'sr', 'dr', '<r', 'pr','op','*p','*r','*b','*d','*k']
-##    j = 0 
-##    for i in label_pred:
-##        plt.plot([x_new[j,0]], [x_new[j,1]], mark[i], markersize = 5)
-##        j +=1
-##    topic_nums_new=np.max(labels_1)
-##    
-##    #根据聚类结果将topic进行合并
-##    m,n=x.shape
-##    new_twc=x
-##    twc_new=np.zeros([topic_nums_new,n])
-##    for i in range(topic_nums_new):
-##        ui=[j for j in range(len(labels_1)) if labels_1[j]==i+1]
-##        print(ui)
-##        for ji in ui:
-##            twc_new[i,:]+=new_twc[ji,:]
-##                
-##    #得到聚类之后的twc矩阵，进行聚类图展示
-##    plt.scatter(twc_new[:,1],twc_new[:,0])
-##    
-##    #相应的将stwc中的信息进行合并，最后显示各个情感下不同topic的Word信息 表
-##    m,n,p=M.sentiment_topic_word_count.shape
-##    m1,n1=M.sentiment_topic_count.shape
-##    stc_new = coo_matrix((m,topic_nums_new)).toarray()
-##    stwc_new=np.zeros([m,topic_nums_new,p])
-##
-##    for i in range(m):
-##        for j in range(topic_nums_new):
-##            ui=[jj for jj in range(len(labels_1)) if labels_1[jj]==j+1]
-##            for ji in ui:
-##                stwc_new[i,j,:]+=new_stwc[i,ji,:]
-##            stc_new[i,j]=sum(stwc_new[i,j,:])
-##    
-    
-    
-##    #得到sentiment_topic_word 
-##    stw_new=np.zeros((m,topic_nums_new,p))
-##    for i in range(m):
-##        for j in range(topic_nums_new):
-##            for k in range(p):
-##                stw_new[i, j, k] = (stwc_new[i, j, k] + 0.01)/(stc_new[i, j] + 0.01* V)
-##
-    #画表-得到每个sentiment下的topic 下的top10word以及概率
 
     table=PrettyTable()
     topnum=20
@@ -752,52 +626,7 @@ if __name__ == '__main__':
     ds=P.doc_sel
 
     
-    #最后得到word-sentiment-vocabulary
-##    word_sentiment_vocabulary={}
-##    for i in range(p):
-##        values=stw_new[:,:,i]
-##        # 获取到了每一个主题下每一个词汇的值，根据其最大值所在位置，找到该所所在的情感
-##        m_index=np.argmax(values,axis=1)
-##        max_list=np.array([values[ii ,m_index[ii]] for ii in range(4)])
-##        max_index=np.argmax(max_list)
-##        word_sentiment_vocabulary[id2word[i]]=(max_index,max_list[max_index])
-
-    #情感得分的计算
-
-##    sentence=[]
-##    for doc in corpus_cup:
-##        sentence.append(' '.join(doc))
-##    id2word=corpora.Dictionary(corpus_cup)
-##    word2id=id2word.token2id
-##    corpus = [id2word.doc2bow(text) for text in comment_train]
-##    model=models.TfidfModel(corpus,id2word=id2word)
-##    weight_corpus=model[corpus]
-##    model_word2id=P.word2id
-##    def get_sentiment_score(pinglun,pinglun_index):
-##        jx_list=[]
-##        wordid_list=[]
-##        power=[]
-##        weight_list=[]
-##        for word in pinglun :
-##            id_word=word2id[word]
-##            jx=P.l[pinglun_index,model_word2id[word]]
-##            if jx==0:
-##                power.append(1)
-##            elif jx==3:
-##                power.append(3)
-##            elif jx==2:
-##                power.append(5)
-##            else:
-##                power.append(4)
-##            jx_list.append(jx)
-##            wordid_list.append(id_word)
-##            for il in weight_corpus[int(pinglun_id)]:
-##                if il[0]==id_word:
-##                    weight_list.append(il[1])
-##        score=sum([power[i]*weight_list[i]  for i in range(len(pinglun))])
-##        return score
-##
-##
+ 
 ##    #按照店铺整理数据
     path_info='C:/Users/Administrator/Desktop/data/评论/product_info_cup_before.csv'
     info_dianpu=pd.read_csv(path_info,engine='python')

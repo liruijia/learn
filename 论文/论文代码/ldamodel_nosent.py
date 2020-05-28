@@ -63,7 +63,7 @@ class ldamodel_nosent():
         self.D=0
         wordnum=0
         for i ,doc in enumerate(self.cut_corpus):
-            
+
             for j ,word in enumerate(doc):
                 
                 if word not in self.word2id.keys():
@@ -289,32 +289,135 @@ class ldamodel_nosent():
 
 
 if __name__ == '__main__':
-    path ='C:/Users/Administrator/Desktop/data/中文情感分析语料库/pda/cut_pda_all.txt'
-    all_text = []
-    with open(path, 'r', encoding='utf-8') as f:
+    path_neg = 'C:/Users/Administrator/Desktop/data/corpus/train_neg_cup_corpus.txt'
+    path_pos = 'C:/Users/Administrator/Desktop/data/corpus/train_pos_cup_corpus.txt'
+    all_text_neg = []
+    all_text_pos = []
+    with open(path_neg, 'r', encoding='utf-8') as f:
         for line in f.readlines():
             lines = line.lstrip('\ufeff').rstrip('\n').split(' ')
-            all_text.append(lines)
+            ui=[]
+            #print(lines)
+            for word_flag in lines:
+                word,flag=word_flag.strip().split('_')
+                ui.append(word)
+            all_text_neg.append(ui)
         f.close()
-    print(len(all_text))
+    with open(path_pos, 'r', encoding='utf-8') as f:
+        for line in f.readlines():
+            lines = line.lstrip('\ufeff').rstrip('\n').split(' ')
+            ui=[]
+            for word_flag in lines:
+                word,flag=word_flag.split('_')
+                ui.append(word)
+            all_text_pos.append(ui)
+        f.close()
+    all_text = all_text_neg + all_text_pos
+    print(all_text[0])
     #comment_train, comment_test = train_test_split(all_text, test_size=0.1)
-    comment_train=all_text[:100]
-    M = ldamodel_nosent(20, 0.1,50,0.1,comment_train, 1000)
+    comment_train, comment_test = train_test_split(all_text, test_size=0.15)
+    M = ldamodel_nosent(10, 0.1,10000,0.1,comment_train, 120)
     M.createdictionary()
     M.initial()
     start = time.time()
     M.gibbssampling()
     end = time.time()
-    print('gibbssampling stage use {0} second'.format(end - start))
-    test0 = [all_text[434]]
-    print(test0)
-    new_dtc, new_twc, new_dc, new_tc=M.predict(test0)
-    M.get_top_word()
-    info = psutil.virtual_memory()
-    print('没有运行Gibbs sampling 之前的内存使用情况')
-    print(u'内存使用：', psutil.Process(os.getpid()).memory_info().rss)
-    print(u'总内存：', info.total)
-    print(u'内存占比：', info.percent)
-    print(u'cpu个数：', psutil.cpu_count())
+
+    #进行聚类
+    from gensim import models,corpora
+    from sklearn.cluster import KMeans
+    sentences=[]
+    for doc in comment_train:
+        sentences.append(' '.join(doc))
+    dictionary = corpora.Dictionary(comment_train)
+    corpus = [dictionary.doc2bow(text) for text in comment_train]
+    corpus_tfidf = models.TfidfModel(corpus)[corpus]
+    L=models.LdaModel(corpus=corpus,num_topics=150,id2word=dictionary)
+    
+    num_show_topic = 9  # 每个文档显示前几个主题
+    print('下面，显示前9个文档的主题分布：')
+    doc_topics = L.get_document_topics(corpus_tfidf)  # 所有文档的主题分布
+    for i in range(9):
+        topic = np.array(doc_topics[i])
+        topic_distribute = np.array(topic[:, 1])
+        topic_idx = list(topic_distribute)
+        print('第%d个文档的 %d 个主题分布概率分别为：' % (i, num_show_topic))
+        print(topic_idx)
+
+    num_show_term = 10   # 每个主题下显示几个词
+    table=PrettyTable()
+    for topic_id in range(num_topics):
+        print('第%d个主题的词与概率如下：\t' % topic_id)
+        term_distribute_all = L.get_topic_terms(topicid=topic_id)
+        term_distribute = term_distribute_all[:num_show_term]
+        term_distribute = np.array(term_distribute)
+        term_id = term_distribute[:, 0].astype(np.int)
+        print('词：\t', end='  ')
+        for t in term_id:
+            print(dictionary.id2token[t], end=' ')
+        print('\n概率：\t', term_distribute[:, 1])
+    from pylab import *
+    mpl.rcParams['font.sans-serif'] = [u'SimHei']
+    mpl.rcParams['axes.unicode_minus'] = False
+    for i, k in enumerate(range(4)):
+        ax = plt.subplot(2, 2, i+1)
+        item_dis_all = L.get_topic_terms(topicid=k)
+        item_dis = np.array(item_dis_all[:num_show_term])
+        ax.plot(range(num_show_term), item_dis[:, 1], 'b*')
+        item_word_id = item_dis[:, 0].astype(np.int)
+        word = [dictionary.id2token[i] for i in item_word_id]
+        ax.set_ylabel(u"概率")
+        for j in range(num_show_term):
+            ax.text(j, item_dis[j, 1], word[j], bbox=dict(facecolor='green',alpha=0.1))
+    plt.suptitle(u'9个主题及其7个主要词的概率', fontsize=18)
+    plt.show()
 
 
+    for i in range(4):
+        ax = plt.subplot(2, 2, i + 1)
+        doc_item = np.array(doc_topics[i])
+        doc_item_id = np.array(doc_item[:, 0])
+        doc_item_dis = np.array(doc_item[:, 1])
+        ax.plot(doc_item_id, doc_item_dis, 'r*')
+        for j in range(doc_item.shape[0]):
+            ax.text(doc_item_id[j], doc_item_dis[j], '%.3f' % doc_item_dis[j])
+    plt.suptitle(u'前4篇文档的主题分布图', fontsize=18)
+    plt.show()
+##data=pd.DataFrame(columns=['s0','s1','s2','s3'])
+##>>> data['s0']=[0.943,0.002,0.001,0.001,0.904,0.001,0.827,0.003,0.002,0.002]
+##>>> data['s1']=[0.056,0.993,0.932,0.996,0.048,0.998,0.173,0.99,0.994,0.994]
+##>>> data['s2']=[0.001,0.002,0.001,0.001,0.048,0.001,0.0,0.003,0.002,0.002]
+##>>> data['s3']=[0.001,0.002,0.067,0.001,0.0,0.001,0.0,0.003,0.002,0.002]
+    i=0
+    for row,do in data.iterrows():
+        ax=plt.subplot(2,2,i+1)
+        ax.plot(list(range(0,4)),do,'r*')
+        for j in range(4):
+            ax.text(j,do[j],'s{0}'.format(j))
+        i+=1
+        if i>4:
+            break
+    plt.suptitle(u'前4篇文档的情感分布图', fontsize=18)
+    plt.savefig('C:/Users/Administrator/Desktop/论文/picture/jst_sentiment')
+    #得到topic_word矩阵
+    topic_word=np.zeros((L.num_topics,L.num_terms))
+    for j in range(L.num_terms):
+            ui=L.get_term_topics(j)
+            for topic_par in ui:
+                topic_word[topic_par[0]]=topic_par[1]
+    #得到第47个主题的
+    term_distribute_all = L.get_topic_terms(topicid=47)
+    term_distribute = term_distribute_all[:num_show_term]
+    term_distribute = np.array(term_distribute)
+    term_id = term_distribute[:, 0].astype(np.int)
+    print('词：\t', end='  ')
+    for t in term_id:
+        print(dictionary.id2token[t], end=' ')
+    print('\n概率：\t', term_distribute[:, 1])
+    
+    km = KMeans(n_clusters=2, random_state = 666)   
+    y_pre = km.fit_predict( topic_word)
+    for j in range(len(y_pre)):
+            ax.text(j, topic_word[j,1], f'topic{0}'.format(j), bbox=dict(facecolor='green',alpha=0.1))
+    plt.axis('off')
+    plt.show()
